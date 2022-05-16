@@ -1,0 +1,38 @@
+name: Lint and Build Chain-hook image
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'chain-hook/**'
+
+  # Allows manual trigger
+  workflow_dispatch:
+
+env:
+  CONTAINER_NAME: chain-hook 
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: hadolint/hadolint-action@v1.5.0
+      with:
+        dockerfile: chain-hook/Dockerfile
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      working-directory: ./chain-hook
+      id: build-image
+      run: |
+        docker build -t $CONTAINER_NAME:$IMAGE_TAG .

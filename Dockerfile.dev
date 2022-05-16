@@ -1,0 +1,13 @@
+FROM node:14.14.0-alpine
+
+RUN apk add --update python make g++\
+   && rm -rf /var/cache/apk/*
+   
+RUN NODE_OPTIONS="--max-old-space-size=8192"
+
+COPY ./package.json ./
+RUN npm i
+COPY . .
+RUN rm .env && mv .env.template .env
+EXPOSE 5000
+CMD ["npm", "run", "dev"]
