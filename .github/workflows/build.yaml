@@ -1,41 +1,84 @@
-name: Deploy
+name: Build
 
 on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
   workflow_dispatch:
-    inputs:
-      environment:
-        required:    true
-        description: Which environment to deploy?
-        type:        choice
-        options:
-          - testnet
-          - mainnet
-      tag:
-        required:    true
-        description: ECR tag
-        default:     latest
+
 env:
-  APP: zilkroad
-  SERVICE: chain-hook
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: zilkroad-private
+  CONTAINER_NAME: chain-hook
 
 jobs:
-  deploy:
-    name: deploy
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hadolint/hadolint-action@v1.5.0
+        with:
+          dockerfile: Dockerfile
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
-          repository: ZilDuck/automation
-          ref:        master
-          token:      ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
 
-      - name: Setup Helm Chart
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get previous tag
+        id: previousTag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 0.0.0
+
+      - name: Get next semantic version
+        id: semVars
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.previousTag.outputs.tag }}
+
+      - name: Set commit tag
+        id: commitTag
         run: |
-          mv /home/runner/work/${{ github.event.repository.name }}/automation/deployments/${{ env.APP }} .
+          [[ "${{ github.event_name }}" = "pull_request" ]] && echo "::set-output name=tag::${{ steps.semVars.outputs.patch }}-$(git rev-parse --short HEAD)" || true
+          [[ "${{ github.event_name }}" = "push" ]] && echo "::set-output name=tag::${{ steps.semVars.outputs.patch }}" || true
 
-      - name: Deploy to Kubernetes
-        uses: WyriHaximus/github-action-helm3@v2
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/$CONTAINER_NAME:${{ steps.commitTag.outputs.tag }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY/$CONTAINER_NAME:${{ steps.commitTag.outputs.tag }}
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY/$CONTAINER_NAME:${{ steps.commitTag.outputs.tag }}"
+
+      - name: Create a GitHub release
+        if: github.event_name == 'push'
+        uses: ncipollo/release-action@v1
         with:
-          exec: helm upgrade --install ${{ env.SERVICE }} ./${{ env.APP }}/${{ env.SERVICE }} -f ./${{ env.APP }}/config/${{ github.event.inputs.environment }}.yaml --namespace ${{ env.APP }}-${{ github.event.inputs.environment }} --atomic --set=image.app.tag=${{ github.event.inputs.tag }}
-          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          tag: ${{ steps.semVars.outputs.patch }}
+          name: Release ${{ steps.semVars.outputs.v_patch }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Deploy testnet
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.ACCESS_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yaml/dispatches \
+            -d '{"ref":"master", "inputs":{"environment":"testnet", "tag":"${{ steps.commitTag.outputs.tag }}"}}'
