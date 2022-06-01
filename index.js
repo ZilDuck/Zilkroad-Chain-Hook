@@ -16,6 +16,7 @@ const {
 
 function ListenToChainEvents() 
 {
+  console.log("Listening to events")
     const subscriber = zilliqa.subscriptionBuilder.buildEventLogSubscriptions(
     process.env.ZILLIQA_API_WS, // network to listen on
     {
@@ -73,42 +74,31 @@ ListenToChainEvents();
 // give it ticker and it'll figure out how  (mainnet only)
 async function getUSDValuefromTokens(ticker, numberOfTokens) 
 {
+  console.log("In getUSDValueFromTokens")
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
-  const token_info =
-  (
-    await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  )
+  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
   const usd_rate = token_info.data.rate_usd;
-  const decimals = token_info.data.decimals;
-
-  const numberWithDecimal = new Big(numberOfTokens).div(new Big(10).pow(decimals));
-  console.log(`${numberWithDecimal} blockchain amount`)
 
   // TODO break each one into new method
-  const tradedValueUSD = new Big(usd_rate).mul(numberWithDecimal).round(2);
-  const oneTokenAsUSD = new Big(usd_rate).round(2);
-  console.log(`trade value of ${ticker} is ${tradedValueUSD} // 1 token as USD 2DP ${oneTokenAsUSD}`)
+  const tradedValueUSD = new Big(usd_rate).mul(numberOfTokens).round(2);
+  console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
+  console.log("Finished in getUSDValueFromTokens")
+  return tradedValueUSD.toNumber();
 }
 
 async function getOneTokenAsUSD(ticker) 
 {
+  console.log("In getOneTokenAsUSD")
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
-  const token_info =
-  (
-    await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  )
+  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
   const usd_rate = token_info.data.rate_usd;
-  const decimals = token_info.data.decimals;
 
-  const numberWithDecimal = new Big(1).div(new Big(10).pow(decimals));
-  console.log(`${numberWithDecimal} blockchain amount`)
-
-  // TODO break each one into new method
-  const tradedValueUSD = new Big(usd_rate).mul(numberWithDecimal).round(2);
   const oneTokenAsUSD = new Big(usd_rate).round(2);
-  console.log(`trade value of ${ticker} is ${tradedValueUSD} // 1 token as USD 2DP ${oneTokenAsUSD}`)
+  console.log(`1 token as USD 2DP ${oneTokenAsUSD}`)
+  console.log("Finished in getOneTokenAsUSD")
+  return oneTokenAsUSD.toNumber();
 }
 
 
@@ -302,9 +292,11 @@ async function SoldHook(eventLog)
   const seller_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, sell_price);
   const royalty_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, royalty_amount);
   const marketplace_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, tax_amount);
+  console.log("We're past the token bit")
 
   let block_transactions = await getTransactionsForBlock(eventLog.params);
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
+  console.log("We got the transactions")
 
   const tx_id = block_transactions[0].id;
 
@@ -317,7 +309,7 @@ async function SoldHook(eventLog)
     _buyer_address : buyer_address,
     _royalty_recipient_address : royalty_recipient,
     _tax_recipient_address : marketplace_recipient,
-    _one_token_to_usd : getOneTokenAsUSD(ft_symbol),
+    _one_token_to_usd : await getOneTokenAsUSD(ft_symbol),
     _tax_amount_token : tax_amount,
     _tax_amount_usd : marketplace_fungible_amount_approx_usd,
     _royalty_amount_token : royalty_amount,
