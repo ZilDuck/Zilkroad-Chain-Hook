@@ -83,7 +83,6 @@ async function getUSDValuefromTokens(ticker, numberOfTokens)
   // TODO break each one into new method
   const tradedValueUSD = new Big(usd_rate).mul(numberOfTokens).round(2);
   console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
-  console.log("Finished in getUSDValueFromTokens")
   return tradedValueUSD.toNumber();
 }
 
@@ -97,7 +96,6 @@ async function getOneTokenAsUSD(ticker)
 
   const oneTokenAsUSD = new Big(usd_rate).round(2);
   console.log(`1 token as USD 2DP ${oneTokenAsUSD}`)
-  console.log("Finished in getOneTokenAsUSD")
   return oneTokenAsUSD.toNumber();
 }
 
@@ -265,7 +263,7 @@ async function DelistedHook(eventLog)
 */
 async function SoldHook(eventLog)
 {
-  console.log("In Sale-listingHook");
+  console.log("In Sale-listingHook - %j", eventLog);
 
   const block =  eventLog.params[0].value;
   const order_id =  eventLog.params[1].value;
@@ -292,11 +290,9 @@ async function SoldHook(eventLog)
   const seller_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, sell_price);
   const royalty_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, royalty_amount);
   const marketplace_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, tax_amount);
-  console.log("We're past the token bit")
 
   let block_transactions = await getTransactionsForBlock(eventLog.params);
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
-  console.log("We got the transactions")
 
   const tx_id = block_transactions[0].id;
 
