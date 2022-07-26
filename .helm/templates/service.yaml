@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chain-hook
+  namespace: {{ .Values.namespace }}
+  labels:
+    service: chain-hook
+spec:
+  selector:
+    service: chain-hook
+  ports:
+  - name: http
+    port: {{ .Values.port }}
+    targetPort: {{ .Values.targetPort }}
+    protocol: TCP

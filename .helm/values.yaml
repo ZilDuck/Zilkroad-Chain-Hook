@@ -1,0 +1,31 @@
+image:
+  app:
+    url: 465700395685.dkr.ecr.eu-west-1.amazonaws.com/zilkroad-private/chain-hook
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecret: ~
+
+port: 5000
+targetPort: 5000
+namespace: devnet
+
+logPath: /app/logs
+
+replicas:
+  chainHook: 1
+
+env:
+  nftMarketplaceAddress: "0x0000000000000000000000000000000000000000"
+  pgHost: "postgres"
+  pgDatabase: "postgres"
+  pgPort: 5432
+  pgWriteUser: "postgres"
+  pgWritePassword: "postgres_password"
+
+resources:
+  limits:
+    cpu: 0.2
+    memory: 128M
+  requests:
+    cpu: 0.2
+    memory: 128M
