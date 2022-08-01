@@ -20,6 +20,7 @@ jobs:
       - uses: hadolint/hadolint-action@v1.5.0
         with:
           dockerfile: Dockerfile
+          failure-threshold: error
   build:
     runs-on: ubuntu-latest
     steps:
@@ -66,13 +67,16 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY/$CONTAINER_NAME:${{ steps.commitTag.outputs.tag }}
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY/$CONTAINER_NAME:${{ steps.commitTag.outputs.tag }}"
 
-      - name: Create a GitHub release
-        if: github.event_name == 'push'
-        uses: ncipollo/release-action@v1
+      - name: Create tag
+        uses: actions/github-script@v5
         with:
-          tag: ${{ steps.semVars.outputs.patch }}
-          name: Release ${{ steps.semVars.outputs.v_patch }}
-          token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.commitTag.outputs.tag }}',
+              sha: context.sha
+            })
 
       - name: Deploy testnet
         run: |
@@ -81,4 +85,4 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.ACCESS_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yaml/dispatches \
-            -d '{"ref":"master", "inputs":{"environment":"testnet", "tag":"${{ steps.commitTag.outputs.tag }}"}}'
+            -d '{"ref":"refs/tags/${{ steps.commitTag.outputs.tag }}", "inputs":{"environment":"testnet", "tag":"${{ steps.commitTag.outputs.tag }}"}}'
