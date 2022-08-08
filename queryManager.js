@@ -68,9 +68,26 @@ async function PublishSale(data) {
     await pgClient.query(sql, values).catch((error) => {throw error});
 }
 
+async function PublishUpdateListing(data) {
+    const sql = "SELECT fn_insertEditStaticListing($1, $2, $3, $4, $5, $6, $7, $8)"
+    const values = [
+        data._static_order_id,
+        data._edit_listing_transaction_hash,     
+        data._previous_fungible_address,
+        data._previous_fungible_token_price,
+        data._new_fungible_address,
+        data._new_fungible_token_price,
+        data._edit_listing_block,
+        data._edit_listing_unixtime
+    ]
+    await pgClient.query(sql, values).catch((error) => {throw error});
+}
+
+
 module.exports = {
     TestConnection,
     PublishListing,
     PublishDelisting,
-    PublishSale
+    PublishSale,
+    PublishUpdateListing
 }
