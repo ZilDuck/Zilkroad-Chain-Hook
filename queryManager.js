@@ -60,7 +60,7 @@ async function PublishSale(data) {
         data._one_token_to_usd,
         data._tax_amount_token,
         data._tax_amount_usd,
-        data._royality_amount_token,
+        data._royalty_amount_token,
         data._royalty_amount_usd,
         data._final_sale_after_taxes_tokens,
         data._final_sale_after_taxes_usd
