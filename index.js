@@ -400,7 +400,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
 
 
 async function EditListingHook(){
-  console.log("In Sale-listingHook");
+  console.log("In EditListingHook");
   const order_id =  eventLog.params[0].value;
   const old_fungible =  eventLog.params[1].value;
   const old_sell_price =  eventLog.params[2].value;
@@ -430,7 +430,7 @@ async function EditListingHook(){
     _edit_listing_unixtime : unix_time,
   }
 
-  console.log("Got sale-listing object %j", edit_listing);
+  console.log("Got EditListingHook object %j", edit_listing);
 
   try {
     await PublishUpdateListing(edit_listing);
