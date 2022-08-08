@@ -1,7 +1,7 @@
 env:
   zilliqaNetwork: "https://dev-api.zilliqa.com/"
   zilliqaApiWs: "wss://dev-ws.zilliqa.com"
-  nftMarketplaceAddress: "0x8e7358f356fda73d450aed70dab7a93708b75650"
+  nftMarketplaceAddress: "0xa4463b8d05eecd52249521e3d33447b0dceb17fb"
   pg:
     host: postgres-zilkroad.postgres.svc.cluster.local
     database: postgres
