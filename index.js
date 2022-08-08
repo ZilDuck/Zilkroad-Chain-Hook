@@ -11,7 +11,8 @@ const {
   TestConnection,
   PublishListing,
   PublishDelisting,
-  PublishSale
+  PublishSale,
+  PublishUpdateListing
 } = require('./queryManager.js')
 
 function ListenToChainEvents() 
