@@ -270,13 +270,13 @@ async function SoldHook(eventLog)
   const nonfungible_contract =  eventLog.params[2].value;
   const token_id =  eventLog.params[3].value;
   const fungible_contract =  eventLog.params[4].value;
-  const sell_price =  eventLog.params[5].value;
+  const sell_price =  parseInt(eventLog.params[5].value) || 0;
   const seller =  eventLog.params[6].value;
   const buyer_address =  eventLog.params[7].value;
   const marketplace_recipient =  eventLog.params[8].value;
-  const tax_amount =  eventLog.params[9].value;
+  const tax_amount =  parseInt(eventLog.params[9].value) || 0;
   const royalty_recipient =  eventLog.params[10].value;
-  const royalty_amount =  eventLog.params[11].value;
+  const royalty_amount =  parseInt(eventLog.params[11].value) || 0;
 
   const unix_time = Date.now();
 
@@ -293,6 +293,8 @@ async function SoldHook(eventLog)
 
   let block_transactions = await getTransactionsForBlock(eventLog.params);
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
+  let final_sale_tokens = sell_price - tax_amount;
+  let final_sale_price = seller_fungible_amount_approx_usd - marketplace_fungible_amount_approx_usd;
 
   const tx_id = block_transactions[0].id;
 
@@ -310,8 +312,8 @@ async function SoldHook(eventLog)
     _tax_amount_usd : marketplace_fungible_amount_approx_usd,
     _royalty_amount_token : royalty_amount,
     _royalty_amount_usd : royalty_fungible_amount_approx_usd,
-    _final_sale_after_taxes_tokens : sell_price,
-    _final_sale_after_taxes_usd : seller_fungible_amount_approx_usd
+    _final_sale_after_taxes_tokens : final_sale_tokens,
+    _final_sale_after_taxes_usd : final_sale_price
   }
 
   console.log("Got sale-listing object %j", sale_object);
