@@ -48,6 +48,10 @@ function ListenToChainEvents()
             {
               DelistedHook(eventLog);
             } 
+            if (eventLog._eventname === "EditListing") 
+            {
+              EditListingHook(eventLog);
+            } 
           }
         }
       }
@@ -390,5 +394,48 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
       console.log("Could not get transaction hash for some reason");
     }
   });
+
+}
+
+
+async function EditListingHook(){
+  console.log("In Sale-listingHook");
+  const order_id =  eventLog.params[0].value;
+  const old_fungible =  eventLog.params[1].value;
+  const old_sell_price =  eventLog.params[2].value;
+  const new_fungible =  eventLog.params[3].value;
+  const new_sell_price =  eventLog.params[4].value;
+  const nonfungible_contract =  eventLog.params[5].value; 
+  const token_id =  eventLog.params[6].value;
+  const lister =  eventLog.params[7].value;
+  const block =  eventLog.params[8].value;
+
+  const unix_time = Date.now();
+
+  let block_transactions = await getTransactionsForBlock(eventLog.params);
+  getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, lister);
+
+  const tx_id = block_transactions[0].id;
+
+  const edit_listing =
+  {
+    _static_order_id : order_id,
+    _edit_listing_transaction_hash : tx_id,
+    _previous_fungible_address : old_fungible,
+    _previous_fungible_token_price : old_sell_price,
+    _new_fungible_address: new_fungible,
+    _new_fungible_token_price : new_sell_price,
+    _edit_listing_block : block,
+    _edit_listing_unixtime : unix_time,
+  }
+
+  console.log("Got sale-listing object %j", edit_listing);
+
+  try {
+    await PublishUpdateListing(edit_listing);
+    console.log("Published Edit sale object to Postgres");
+  } catch (e) {
+    console.error("Couldn't publish Edit sale object to Postgres: %s", e);
+  } 
 
 }
