@@ -276,7 +276,7 @@ async function SoldHook(eventLog)
   const marketplace_recipient =  eventLog.params[8].value;
   const tax_amount =  eventLog.params[9].value;
   const royalty_recipient =  eventLog.params[10].value;
-  const royalty_amount =  eventLog.params[11].value;
+  const royalty_amount =  parseInt(eventLog.params[11].value) || 0;
 
   const unix_time = Date.now();
 
