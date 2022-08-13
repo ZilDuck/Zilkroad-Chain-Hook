@@ -399,7 +399,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
 }
 
 
-async function EditListingHook(){
+async function EditListingHook(eventLog){
   console.log("In EditListingHook");
   const order_id =  eventLog.params[0].value;
   const old_fungible =  eventLog.params[1].value;
