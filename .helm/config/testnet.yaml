@@ -7,7 +7,7 @@ env:
     database: postgres
     port: 5432
     user: postgres
-    password: eufdkov2BH
+    password: TQN4EGYenx
 
 namespace: zilkroad-testnet
 
