@@ -83,13 +83,12 @@ async function getUSDValuefromTokens(ticker, numberOfTokens, decimals)
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
   const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  const usd_rate = token_info.data.rate_usd;
+  const usd_rate = (Math.round(token_info.data.rate_usd  * 100) / 100).toFixed(2);
 
   const numberWithDecimal =  usd_rate / Math.pow(10, decimals)
-
-  const tradedValueUSD = new Big(usd_rate).mul(numberWithDecimal).round(2);
-  console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
-  return tradedValueUSD.toNumber();
+  const tradedValueUSD = usd_rate * numberWithDecimal
+  console.log(`trade value of ${numberWithDecimal} of ${ticker} is ${tradedValueUSD}`)
+  return tradedValueUSD
 }
 
 async function getOneTokenAsUSD(ticker) 
@@ -98,10 +97,9 @@ async function getOneTokenAsUSD(ticker)
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
   const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  const usd_rate = token_info.data.rate_usd;
+  const usd_rate = (Math.round(token_info.data.rate_usd  * 100) / 100).toFixed(2);
 
-  const oneTokenAsUSD = new Big(usd_rate).round(2);
-  console.log(`1 token as USD 2DP ${oneTokenAsUSD}`)
+  console.log(`1 token as USD 2DP ${usd_rate}`)
   return oneTokenAsUSD.toNumber();
 }
 
