@@ -100,7 +100,7 @@ async function getOneTokenAsUSD(ticker)
   const usd_rate = (Math.round(token_info.data.rate_usd  * 100) / 100).toFixed(2);
 
   console.log(`1 token as USD 2DP ${usd_rate}`)
-  return oneTokenAsUSD.toNumber();
+  return usd_rate
 }
 
 
