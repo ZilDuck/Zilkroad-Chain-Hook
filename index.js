@@ -77,18 +77,18 @@ try {
 ListenToChainEvents();
 
 // give it ticker and it'll figure out how  (mainnet only)
-async function getUSDValuefromTokens(ticker, numberOfTokens) 
+async function getUSDValuefromTokens(ticker, numberOfTokens, decimals) 
 {
   console.log("In getUSDValueFromTokens")
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
   const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  const usd_rate = token_info.data.rate_usd;
+  const usd_rate = (Math.round(token_info.data.rate_usd  * 100) / 100).toFixed(2);
 
-  // TODO break each one into new method
-  const tradedValueUSD = new Big(usd_rate).mul(numberOfTokens).round(2);
-  console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
-  return tradedValueUSD.toNumber();
+  const numberWithDecimal =  usd_rate / Math.pow(10, decimals)
+  const tradedValueUSD = usd_rate * numberWithDecimal
+  console.log(`trade value of ${numberWithDecimal} of ${ticker} is ${tradedValueUSD}`)
+  return tradedValueUSD
 }
 
 async function getOneTokenAsUSD(ticker) 
@@ -97,11 +97,10 @@ async function getOneTokenAsUSD(ticker)
   // account for wzil
   const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
   const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
-  const usd_rate = token_info.data.rate_usd;
+  const usd_rate = (Math.round(token_info.data.rate_usd  * 100) / 100).toFixed(2);
 
-  const oneTokenAsUSD = new Big(usd_rate).round(2);
-  console.log(`1 token as USD 2DP ${oneTokenAsUSD}`)
-  return oneTokenAsUSD.toNumber();
+  console.log(`1 token as USD 2DP ${usd_rate}`)
+  return usd_rate
 }
 
 
@@ -290,11 +289,14 @@ async function SoldHook(eventLog)
   let ft_symbol = ft_contract_immutables.filter(function(immutable) {
     return immutable.vname == "symbol"
   })[0].value;
-  console.log("Symbol is %s, Sell price is %s", ft_symbol, sell_price);
+  let ft_decimals = ft_contract_immutables.filter(function(immutable) {
+    return immutable.vname == "decimals"
+  })[0].value;
+  console.log("Symbol is %s, Sell price is %s, Decimals is %s", ft_symbol, sell_price, ft_decimals);
 
-  const seller_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, sell_price);
-  const royalty_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, royalty_amount);
-  const marketplace_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, tax_amount);
+  const seller_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, sell_price, ft_decimals);
+  const royalty_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, royalty_amount, ft_decimals);
+  const marketplace_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, tax_amount, ft_decimals);
 
   let block_transactions = await getTransactionsForBlock(eventLog.params);
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
