@@ -85,8 +85,7 @@ async function getUSDValuefromTokens(ticker, numberOfTokens, decimals)
   const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
   const usd_rate = token_info.data.rate_usd;
 
-  const numberWithDecimal = new Big(numberOfTokens).div(new Big(10).pow(decimals));
-
+  const numberWithDecimal =  usd_rate / Math.pow(10, decimals)
 
   const tradedValueUSD = new Big(usd_rate).mul(numberWithDecimal).round(2);
   console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
