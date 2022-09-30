@@ -282,6 +282,10 @@ async function SoldHook(eventLog)
   const royalty_recipient =  eventLog.params[10].value;
   const royalty_amount =  eventLog.params[11].value || 0;
 
+  console.log(`sell_price ${sell_price}`)
+  console.log(`tax_amount ${tax_amount}`)
+  console.log(`royalty_amount ${royalty_amount}`)
+
   const unix_time = Date.now();
 
   const ft_contract_object = zilliqa.contracts.at(fungible_contract);
