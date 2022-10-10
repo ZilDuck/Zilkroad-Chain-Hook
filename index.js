@@ -352,6 +352,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
   // this would be a lot simpler, commented version is the simpler one
   var updateBlock = false;
   var id;
+  console.log(block_transactions)
   block_transactions.forEach(function(block) {
     block.transactions.result.forEach(function(result) {
       id = result.ID;
@@ -363,6 +364,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
         if ( updateBlock ) {
           return;
         }
+        console.log(eventLogs)
         var components = eventLogs.params.filter(function(object) {
           // When testing SoldTest on testnet, the buyer and seller have the same ID
           // So we add this extra check on that level to make sure it's bound to
@@ -385,7 +387,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
                    object.value === user && object.vname === "lister"
                  )
         });
-        if ( components.length == 3 ) {
+        if ( components.length == 3) {
           updateBlock = true;
           return;
         }
