@@ -352,7 +352,7 @@ function getTransactionHashForBlock(block_transactions, nonfungible_contract, to
   // this would be a lot simpler, commented version is the simpler one
   var updateBlock = false;
   var id;
-  console.log(block_transactions)
+  console.log(JSON.stringify(block_transactions))
   block_transactions.forEach(function(block) {
     block.transactions.result.forEach(function(result) {
       id = result.ID;
