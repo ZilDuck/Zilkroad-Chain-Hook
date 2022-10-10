@@ -76,27 +76,29 @@ try {
 }
 ListenToChainEvents();
 
-// give it ticker and it'll figure out how  (mainnet only)
-async function getUSDValuefromTokens(ticker, numberOfTokens) 
+// give it symbol and it'll figure out how  (mainnet only)
+async function getUSDValuefromTokens(symbol, numberOfTokens)
 {
   console.log("In getUSDValueFromTokens")
   // account for wzil
-  const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
-  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
+  const final_symbol = symbol.toLowerCase() == "wzil" ? "zil" : symbol;
+  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_symbol}`)
   const usd_rate = token_info.data.rate_usd;
+  const decimals = token_info.data.decimals;
 
+  const final_number = numberOfTokens / Math.pow(10, decimals);
   // TODO break each one into new method
-  const tradedValueUSD = new Big(usd_rate).mul(numberOfTokens).round(2);
-  console.log(`trade value of ${ticker} is ${tradedValueUSD}`)
+  const tradedValueUSD = new Big(usd_rate).mul(final_number).round(2);
+  console.log(`trade value of ${symbol} is ${tradedValueUSD}`)
   return tradedValueUSD.toNumber();
 }
 
-async function getOneTokenAsUSD(ticker) 
+async function getOneTokenAsUSD(symbol)
 {
   console.log("In getOneTokenAsUSD")
   // account for wzil
-  const final_ticker = ticker.toLowerCase() == "wzil" ? "zil" : ticker;
-  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_ticker}`)
+  const final_symbol = symbol.toLowerCase() == "wzil" ? "zil" : symbol;
+  const token_info = await axios.get(`https://api.zilstream.com/tokens/${final_symbol}`)
   const usd_rate = token_info.data.rate_usd;
 
   const oneTokenAsUSD = new Big(usd_rate).round(2);
