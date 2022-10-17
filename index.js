@@ -300,8 +300,8 @@ async function SoldHook(eventLog)
 
   let block_transactions = await getTransactionsForBlock(eventLog.params);
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
-  let final_sale_tokens = sell_price - tax_amount;
-  let final_sale_price = seller_fungible_amount_approx_usd - marketplace_fungible_amount_approx_usd;
+  let final_sale_tokens = sell_price - tax_amount - royalty_amount;
+  let final_sale_price = seller_fungible_amount_approx_usd - marketplace_fungible_amount_approx_usd - royalty_fungible_amount_approx_usd;
 
   const tx_id = block_transactions[0].id;
 
