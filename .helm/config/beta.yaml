@@ -1,0 +1,18 @@
+env:
+  zilliqaNetwork: "https://dev-api.zilliqa.com/"
+  zilliqaApiWs: "wss://dev-ws.zilliqa.com"
+  nftMarketplaceAddress: "0xad43392d1750771e58931801ddc274e5984660b4"
+  pg:
+    host: postgres-zilkroad.postgres.svc.cluster.local
+    database: postgres
+    port: 5432
+    user: postgres
+    password: TQN4EGYenx
+
+namespace: zilkroad-beta
+
+image:
+  app:
+    pullSecret: aws-registry
+
+replicas: 1
