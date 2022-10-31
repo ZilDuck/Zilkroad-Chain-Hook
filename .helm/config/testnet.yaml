@@ -15,4 +15,5 @@ image:
   app:
     pullSecret: aws-registry
 
-replicas: 1
+# testnet instance covers staging
+replicas: 0
