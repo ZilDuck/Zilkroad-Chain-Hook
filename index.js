@@ -29,6 +29,7 @@ function ListenToChainEvents()
   subscriber.emitter.on(MessageType.EVENT_LOG, (event) => 
   {
     console.log("Got new block at %s", new Date().toLocaleString());
+    new Promise(r => setTimeout(r, 2000));
     try 
     {
       if (event.value)
@@ -74,6 +75,7 @@ try {
   console.error("Could not establish connection to Postgres: %s", e);
   throw e;
 }
+
 ListenToChainEvents();
 
 // give it symbol and it'll figure out how  (mainnet only)
@@ -152,7 +154,9 @@ async function ListedHook(eventLog)
   const order_id = eventLog.params[6].value;
   const unix_time = Date.now();
 
-  let block_transactions = await getTransactionsForBlock(eventLog.params);
+  let block_transactions = await getTransactionsForBlock(eventLog.params).catch((e) => 
+    console.log(`couldnt get block ${e} // ${eventLog.params}`)
+  );
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, lister_address);
 
   const tx_id = block_transactions[0].id;
@@ -212,10 +216,11 @@ async function DelistedHook(eventLog)
   const token_id = eventLog.params[2].value;
   const delister_address = eventLog.params[3].value;
   const block = eventLog.params[4].value;
-
   const unix_time = Date.now();
 
-  let block_transactions = await getTransactionsForBlock(eventLog.params);
+  let block_transactions = await getTransactionsForBlock(eventLog.params).catch((e) => 
+    console.log(`couldnt get block ${e} // ${eventLog.params}`)
+  );
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, delister_address);
 
   const tx_id = block_transactions[0].id;
@@ -284,7 +289,6 @@ async function SoldHook(eventLog)
   const tax_amount =  parseInt(eventLog.params[9].value) || 0;
   const royalty_recipient =  eventLog.params[10].value;
   const royalty_amount =  parseInt(eventLog.params[11].value) || 0;
-
   const unix_time = Date.now();
 
   const ft_contract_object = zilliqa.contracts.at(fungible_contract);
@@ -298,7 +302,9 @@ async function SoldHook(eventLog)
   const royalty_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, royalty_amount);
   const marketplace_fungible_amount_approx_usd = await getUSDValuefromTokens(ft_symbol, tax_amount);
 
-  let block_transactions = await getTransactionsForBlock(eventLog.params);
+  let block_transactions = await getTransactionsForBlock(eventLog.params).catch((e) => 
+    console.log(`couldnt get block ${e} // ${eventLog.params}`)
+  );
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, buyer_address);
   let final_sale_tokens = (sell_price - tax_amount) - royalty_amount;
   let final_sale_price = (seller_fungible_amount_approx_usd - marketplace_fungible_amount_approx_usd) - royalty_fungible_amount_approx_usd;
@@ -414,10 +420,11 @@ async function EditListingHook(eventLog){
   const token_id =  eventLog.params[6].value;
   const lister =  eventLog.params[7].value;
   const block =  eventLog.params[8].value;
-
   const unix_time = Date.now();
 
-  let block_transactions = await getTransactionsForBlock(eventLog.params);
+  let block_transactions = await getTransactionsForBlock(eventLog.params).catch((e) => 
+    console.log(`couldnt get block ${e} // ${eventLog.params}`)
+  )
   getTransactionHashForBlock(block_transactions, nonfungible_contract, token_id, lister);
 
   const tx_id = block_transactions[0].id;
