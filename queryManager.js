@@ -45,7 +45,7 @@ async function PublishDelisting(data) {
         data._delisting_unixtime
     ]
     await pgClient.query(sql, values).catch((error) => {throw error});
-}
+} 
 
 async function PublishSale(data) {
     const sql = "SELECT fn_insertstaticsaleforlisting($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
