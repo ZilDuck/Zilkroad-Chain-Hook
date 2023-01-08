@@ -29,7 +29,7 @@ function ListenToChainEvents()
   subscriber.emitter.on(MessageType.EVENT_LOG, (event) => 
   {
     console.log("Got new block at %s", new Date().toLocaleString());
-    new Promise(r => setTimeout(r, 2000));
+    new Promise(r => setTimeout(r, 10000)); //mainnet takes longer than 2000
     try 
     {
       if (event.value)
